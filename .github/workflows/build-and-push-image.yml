@@ -1,0 +1,37 @@
+name: Build and Push Image
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    branches:
+      - main
+
+jobs:
+  build-and-publish:
+    name: Build and Push docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set tag names
+        id: tag_names
+        run: |
+          echo "GITHUB_EVENT_NAME                         =" "${GITHUB_EVENT_NAME}"
+          echo "github.event_name                         =" "${{github.event_name}}"
+          # git コマンドでの習得テスト (sedは、いろいろ試しているときの消し忘れなので気にしないでください)
+          echo "git branch --show-current | sed 's|/|-|g' =" $(git branch --show-current | sed 's|/|-|g')
+          echo "git rev-parse --short HEAD                =" $(git rev-parse --short HEAD)
+          echo "git describe --tags --always              =" $(git describe --tags --always)
+          # 環境変数での習得テスト
+          echo "GITHUB_REF#refs/heads/                    =" "${GITHUB_REF#refs/heads/}"
+          echo "GITHUB_HEAD_REF#refs/heads/               =" "${GITHUB_HEAD_REF#refs/heads/}"
+          echo "GITHUB_BASE_REF#refs/heads/               =" "${GITHUB_BASE_REF#refs/heads/}"
+      - name: DEBUG_1
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
+      - name: Set Branch name for workflow_dispatch 
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          echo 'workflow_dispatch'
